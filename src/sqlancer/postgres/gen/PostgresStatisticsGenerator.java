@@ -20,9 +20,9 @@ public final class PostgresStatisticsGenerator {
     public static SQLQueryAdapter insert(PostgresGlobalState globalState) {
         StringBuilder sb = new StringBuilder();
         sb.append("CREATE STATISTICS ");
-        if (Randomly.getBoolean()) {
+//        if (Randomly.getBoolean()) {
             sb.append(" IF NOT EXISTS");
-        }
+//        }
         PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO materialized view
         if (randomTable.getColumns().size() < 2) {
             throw new IgnoreMeException();
