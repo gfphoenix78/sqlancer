@@ -4,6 +4,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 
 public final class PostgresSequenceGenerator {
 
@@ -13,13 +14,15 @@ public final class PostgresSequenceGenerator {
     public static SQLQueryAdapter createSequence(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder("CREATE");
+        int majorVersion = PostgresProvider.majorVersion();
         if (Randomly.getBoolean()) {
             sb.append(" ");
             sb.append(Randomly.fromOptions("TEMPORARY", "TEMP"));
         }
         sb.append(" SEQUENCE");
         // TODO keep track of sequences
-        sb.append(" IF NOT EXISTS");
+        if (majorVersion >= 10)
+            sb.append(" IF NOT EXISTS");
         // TODO generate sequence names
         sb.append(" seq");
         if (Randomly.getBoolean()) {

@@ -9,6 +9,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
@@ -110,7 +111,8 @@ public class PostgresTableGenerator {
         }
         sb.append(")");
         generateInherits();
-//        generatePartitionBy();
+        if (PostgresProvider.majorVersion() >= 12)
+            generatePartitionBy();
         PostgresCommon.generateWith(sb, globalState, errors);
         if (Randomly.getBoolean() && isTemporaryTable) {
             sb.append(" ON COMMIT ");
@@ -208,6 +210,14 @@ public class PostgresTableGenerator {
 
     private void createColumnConstraint(PostgresDataType type, boolean serial) {
         List<ColumnConstraint> constraintSubset = Randomly.nonEmptySubset(ColumnConstraint.values());
+        if (PostgresProvider.majorVersion() < 12) {
+            // PG < 12 doesn't support GENERATED syntax or different from PG 12.
+            constraintSubset.remove(ColumnConstraint.GENERATED);
+            while (constraintSubset.isEmpty()) {
+                constraintSubset = Randomly.nonEmptySubset(ColumnConstraint.values());
+                constraintSubset.remove(ColumnConstraint.GENERATED);
+            }
+        }
         if (Randomly.getBoolean()) {
             // make checks constraints less likely
             constraintSubset.remove(ColumnConstraint.CHECK);

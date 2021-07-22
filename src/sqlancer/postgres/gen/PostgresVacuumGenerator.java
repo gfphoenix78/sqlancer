@@ -8,6 +8,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public final class PostgresVacuumGenerator {
@@ -18,7 +19,7 @@ public final class PostgresVacuumGenerator {
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable();
         StringBuilder sb = new StringBuilder("VACUUM ");
-        if (Randomly.getBoolean()) {
+        if (PostgresProvider.majorVersion() >= 12 && Randomly.getBoolean()) {
             // VACUUM [ ( { FULL | FREEZE | VERBOSE | ANALYZE | DISABLE_PAGE_SKIPPING } [,
             // ...] ) ] [ table_name [ (column_name [, ...] ) ] ]
             sb.append("(");

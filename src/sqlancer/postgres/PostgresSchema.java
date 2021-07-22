@@ -255,8 +255,8 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
 
     protected static List<PostgresStatisticsObject> getStatistics(SQLConnection con) throws SQLException {
         List<PostgresStatisticsObject> statistics = new ArrayList<>();
-        String []versions = con.getDatabaseVersion().split(".");
-        if (versions.length>=1 && Integer.valueOf(versions[0]) >= 10)
+        int majorVersion = PostgresProvider.majorVersion();
+        if (majorVersion >= 10)
         try (Statement s = con.createStatement()) {
             try (ResultSet rs = s.executeQuery("SELECT stxname FROM pg_statistic_ext ORDER BY stxname;")) {
                 while (rs.next()) {
