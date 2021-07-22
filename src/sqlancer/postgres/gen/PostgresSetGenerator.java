@@ -7,6 +7,7 @@ import java.util.function.Function;
 import sqlancer.Randomly;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 
 public final class PostgresSetGenerator {
 
@@ -131,6 +132,8 @@ public final class PostgresSetGenerator {
         StringBuilder sb = new StringBuilder();
         ArrayList<ConfigurationOption> options = new ArrayList<>(Arrays.asList(ConfigurationOption.values()));
         options.remove(ConfigurationOption.DEFAULT_WITH_OIDS);
+        if (PostgresProvider.majorVersion() >= 12)
+            options.remove(ConfigurationOption.PARALLEL_LEADER_PARTICIPATION);
         ConfigurationOption option = Randomly.fromList(options);
         sb.append("SET ");
         if (Randomly.getBoolean()) {
