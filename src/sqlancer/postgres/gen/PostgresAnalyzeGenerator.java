@@ -6,6 +6,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 
 public final class PostgresAnalyzeGenerator {
@@ -14,9 +15,11 @@ public final class PostgresAnalyzeGenerator {
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
+        int majorVersion = PostgresProvider.majorVersion();
+        assert majorVersion > 0;
         PostgresTable table = globalState.getSchema().getRandomTable();
         StringBuilder sb = new StringBuilder("ANALYZE");
-        if (Randomly.getBoolean()) {
+        if (majorVersion >= 12 && Randomly.getBoolean()) {
             sb.append("(");
             if (Randomly.getBoolean()) {
                 sb.append(" VERBOSE");
@@ -24,6 +27,8 @@ public final class PostgresAnalyzeGenerator {
                 sb.append(" SKIP_LOCKED");
             }
             sb.append(")");
+        } else if (majorVersion < 12 && Randomly.getBoolean()) {
+            sb.append(" VERBOSE");
         }
         if (Randomly.getBoolean()) {
             sb.append(" ");

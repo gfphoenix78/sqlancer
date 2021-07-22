@@ -248,6 +248,13 @@ public final class PostgresCommon {
             PostgresGlobalState globalState, ExpectedErrors errors) {
         // TODO constraint name
         List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
+        {
+            tableConstraints.remove(TableConstraints.EXCLUDE);
+            while (tableConstraints.isEmpty()) {
+                tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
+                tableConstraints.remove(TableConstraints.EXCLUDE);
+            }
+        }
         if (excludePrimaryKey) {
             tableConstraints.remove(TableConstraints.PRIMARY_KEY);
         }
@@ -263,7 +270,10 @@ public final class PostgresCommon {
 
     public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
             ExpectedErrors errors) {
-        addTableConstraint(sb, table, globalState, Randomly.fromOptions(TableConstraints.values()), errors);
+        TableConstraints constraint;
+        while ((constraint = Randomly.fromOptions(TableConstraints.values())) == TableConstraints.EXCLUDE)
+            continue;
+        addTableConstraint(sb, table, globalState, constraint, errors);
     }
 
     private static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,

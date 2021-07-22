@@ -49,6 +49,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
      * Generate only data types and expressions that are understood by PQS.
      */
     public static boolean generateOnlyKnown;
+    private static int majorVersion;
 
     protected String entryURL;
     protected String username;
@@ -66,6 +67,10 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
 
     protected PostgresProvider(Class<PostgresGlobalState> globalClass, Class<PostgresOptions> optionClass) {
         super(globalClass, optionClass);
+    }
+
+    public static int majorVersion() {
+        return majorVersion;
     }
 
     public enum Action implements AbstractAction<PostgresGlobalState> {
@@ -264,6 +269,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         globalState.getState().logStatement(String.format("\\c %s;", databaseName));
 
         con = DriverManager.getConnection("jdbc:" + testURL, username, password);
+        majorVersion = con.getMetaData().getDatabaseMajorVersion();
         return new SQLConnection(con);
     }
 

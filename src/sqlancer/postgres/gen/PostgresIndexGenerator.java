@@ -8,6 +8,7 @@ import sqlancer.common.DBMSCommon;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
@@ -27,6 +28,7 @@ public final class PostgresIndexGenerator {
     public static SQLQueryAdapter generate(PostgresGlobalState globalState) {
         ExpectedErrors errors = new ExpectedErrors();
         StringBuilder sb = new StringBuilder();
+        int majorVersion = PostgresProvider.majorVersion();
         sb.append("CREATE");
         if (Randomly.getBoolean()) {
             sb.append(" UNIQUE");
@@ -36,15 +38,15 @@ public final class PostgresIndexGenerator {
          * Commented out as a workaround for https://www.postgresql.org/message-id/CA%2Bu7OA4XYhc-
          * qyCgJqwwgMGZDWAyeH821oa5oMzm_HEifZ4BeA%40mail.gmail.com
          */
-        // if (Randomly.getBoolean()) {
-        // sb.append("CONCURRENTLY ");
-        // }
+         if (majorVersion >= 10 && Randomly.getBoolean()) {
+            sb.append("CONCURRENTLY ");
+         }
         PostgresTable randomTable = globalState.getSchema().getRandomTable(t -> !t.isView()); // TODO: materialized
                                                                                               // views
         String indexName = getNewIndexName(randomTable);
         sb.append(indexName);
         sb.append(" ON ");
-        if (Randomly.getBoolean()) {
+        if (majorVersion >= 11 && Randomly.getBoolean()) {
             sb.append("ONLY ");
         }
         sb.append(randomTable.getName());
@@ -98,7 +100,7 @@ public final class PostgresIndexGenerator {
         }
 
         sb.append(")");
-        if (Randomly.getBoolean() && method != IndexType.HASH) {
+        if (majorVersion >= 11 && Randomly.getBoolean() && method != IndexType.HASH) {
             sb.append(" INCLUDE(");
             List<PostgresColumn> columns = randomTable.getRandomNonEmptyColumnSubset();
             sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));

@@ -7,6 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresVisitor;
@@ -20,6 +21,7 @@ public final class PostgresInsertGenerator {
     public static SQLQueryAdapter insert(PostgresGlobalState globalState) {
         PostgresTable table = globalState.getSchema().getRandomTable(t -> t.isInsertable());
         ExpectedErrors errors = new ExpectedErrors();
+        int majorVerion = PostgresProvider.majorVersion();
         errors.add("cannot insert into column");
         PostgresCommon.addCommonExpressionErrors(errors);
         PostgresCommon.addCommonInsertUpdateErrors(errors);
@@ -41,7 +43,7 @@ public final class PostgresInsertGenerator {
         sb.append("(");
         sb.append(columns.stream().map(c -> c.getName()).collect(Collectors.joining(", ")));
         sb.append(")");
-        if (Randomly.getBooleanWithRatherLowProbability()) {
+        if (majorVerion >= 10 && Randomly.getBooleanWithRatherLowProbability()) {
             sb.append(" OVERRIDING");
             sb.append(" ");
             sb.append(Randomly.fromOptions("SYSTEM", "USER"));
@@ -77,7 +79,7 @@ public final class PostgresInsertGenerator {
                 insertRow(globalState, sb, columns, n == 1);
             }
         }
-        if (Randomly.getBooleanWithRatherLowProbability()) {
+        if (majorVerion >= 10 && Randomly.getBooleanWithRatherLowProbability()) {
             sb.append(" ON CONFLICT ");
             if (Randomly.getBoolean()) {
                 sb.append("(");

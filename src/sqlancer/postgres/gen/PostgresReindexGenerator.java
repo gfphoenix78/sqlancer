@@ -8,6 +8,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresIndex;
 
 public final class PostgresReindexGenerator {
@@ -20,19 +21,21 @@ public final class PostgresReindexGenerator {
     }
 
     public static SQLQueryAdapter create(PostgresGlobalState globalState) {
+        int majorVersion = PostgresProvider.majorVersion();
+        assert majorVersion >= 9;
         ExpectedErrors errors = new ExpectedErrors();
         errors.add("could not create unique index"); // CONCURRENT INDEX
         StringBuilder sb = new StringBuilder();
         sb.append("REINDEX");
-        // if (Randomly.getBoolean()) {
-        // sb.append(" VERBOSE");
-        // }
+        if (majorVersion >= 10 && Randomly.getBoolean()) {
+            sb.append(" VERBOSE");
+        }
         sb.append(" ");
         Scope scope = Randomly.fromOptions(Scope.values());
         switch (scope) {
         case INDEX:
             sb.append("INDEX ");
-            if (Randomly.getBoolean()) {
+            if (majorVersion >= 12 && Randomly.getBoolean()) {
                 sb.append("CONCURRENTLY ");
             }
             List<PostgresIndex> indexes = globalState.getSchema().getRandomTable().getIndexes();
@@ -43,14 +46,14 @@ public final class PostgresReindexGenerator {
             break;
         case TABLE:
             sb.append("TABLE ");
-            if (Randomly.getBoolean()) {
+            if (majorVersion >= 12 && Randomly.getBoolean()) {
                 sb.append("CONCURRENTLY ");
             }
             sb.append(globalState.getSchema().getRandomTable(t -> !t.isView()).getName());
             break;
         case DATABASE:
             sb.append("DATABASE ");
-            if (Randomly.getBoolean()) {
+            if (majorVersion >= 12 && Randomly.getBoolean()) {
                 sb.append("CONCURRENTLY ");
             }
             sb.append(globalState.getSchema().getDatabaseName());
