@@ -136,6 +136,10 @@ public final class PostgresSetGenerator {
             options.remove(ConfigurationOption.PARALLEL_LEADER_PARTICIPATION);
             options.remove(ConfigurationOption.WAL_COMPRESSION);
             options.remove(ConfigurationOption.ENABLE_PARALLEL_APPEND);
+            options.remove(ConfigurationOption.JIT);
+            options.remove(ConfigurationOption.JIT_ABOVE_COST);
+            options.remove(ConfigurationOption.JIT_INLINE_ABOVE_COST);
+            options.remove(ConfigurationOption.JIT_OPTIMIZE_ABOVE_COST);
         }
         ConfigurationOption option = Randomly.fromList(options);
         sb.append("SET ");

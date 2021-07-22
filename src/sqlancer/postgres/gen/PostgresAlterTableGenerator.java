@@ -102,6 +102,8 @@ public class PostgresAlterTableGenerator {
         if (PostgresProvider.majorVersion() < 12) {
             action.remove(Action.FORCE_ROW_LEVEL_SECURITY);
             action.remove(Action.NO_FORCE_ROW_LEVEL_SECURITY);
+            action.remove(Action.ENABLE_ROW_LEVEL_SECURITY);
+            action.remove(Action.DISABLE_ROW_LEVEL_SECURITY);
         }
         if (randomTable.getColumns().size() == 1) {
             action.remove(Action.ALTER_TABLE_DROP_COLUMN);
