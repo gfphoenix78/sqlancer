@@ -34,6 +34,7 @@ import sqlancer.postgres.gen.PostgresTruncateGenerator;
 import sqlancer.postgres.gen.PostgresUpdateGenerator;
 import sqlancer.postgres.gen.PostgresVacuumGenerator;
 import sqlancer.postgres.gen.PostgresViewGenerator;
+import sqlancer.sqlite3.gen.ddl.SQLite3CreateVirtualFTSTableGenerator;
 
 // EXISTS
 // IN
@@ -122,6 +123,33 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         @Override
         public SQLQueryAdapter getQuery(PostgresGlobalState state) throws Exception {
             return sqlQueryProvider.getQuery(state);
+        }
+        public static Action[] versionedValues() {
+            Action []array = values();
+            Action []bad = {CREATE_STATISTICS, DROP_STATISTICS};
+            if (majorVersion >= 12)
+                return array;
+            // filter bad actions that are not available under PG 12.
+            int i, k;
+            Action []copy = array.clone();
+            for (i = 0, k = 0; i < array.length; i++) {
+                boolean good = true;
+                for (Action x : bad) {
+                    if (array[i] == x) {
+                        good = false;
+                        break;
+                    }
+                }
+                if (good) {
+                    copy[k] = array[i];
+                    k++;
+                }
+            }
+            if (i == k)
+                return array;
+            Action []newArray = new Action[k];
+            System.arraycopy(copy, 0, newArray, 0, k);
+            return newArray;
         }
     }
 
@@ -292,8 +320,7 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
 
     protected void prepareTables(PostgresGlobalState globalState) throws Exception {
         StatementExecutor<PostgresGlobalState, Action> se = new StatementExecutor<>(globalState,
-                Util.filter(Action.values(), PostgresProvider.majorVersion() < 12,
-                        Action.CREATE_STATISTICS, Action.DROP_STATISTICS),
+                Action.versionedValues(),
                 PostgresProvider::mapActions, (q) -> {
                     if (globalState.getSchema().getDatabaseTables().isEmpty()) {
                         throw new IgnoreMeException();

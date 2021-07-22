@@ -1,5 +1,9 @@
 package sqlancer;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 public class Util {
     // if cond is true, filter bad items
     public static <T> T []filter(T []array, boolean cond, T ...bad) {
