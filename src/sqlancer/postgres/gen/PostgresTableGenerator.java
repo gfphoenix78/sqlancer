@@ -121,13 +121,19 @@ public class PostgresTableGenerator {
         }
     }
 
+    private static final String []like_ops_low = {
+            "DEFAULTS", "CONSTRAINTS", "INDEXES",
+        "STORAGE", "COMMENTS", "ALL"
+    };
     private void createLike() {
         sb.append("(");
         sb.append("LIKE ");
         sb.append(newSchema.getRandomTable().getName());
         if (Randomly.getBoolean()) {
+            int majorVersion = PostgresProvider.majorVersion();
             for (int i = 0; i < Randomly.smallNumber(); i++) {
-                String option = Randomly.fromOptions("DEFAULTS", "CONSTRAINTS", "INDEXES", "STORAGE", "COMMENTS",
+                String option = majorVersion < 12 ? Randomly.fromOptions(like_ops_low)
+                                :Randomly.fromOptions("DEFAULTS", "CONSTRAINTS", "INDEXES", "STORAGE", "COMMENTS",
                         "GENERATED", "IDENTITY", "STATISTICS", "STORAGE", "ALL");
                 sb.append(" ");
                 sb.append(Randomly.fromOptions("INCLUDING", "EXCLUDING"));
