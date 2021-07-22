@@ -25,7 +25,7 @@ public final class PostgresSequenceGenerator {
             sb.append(" IF NOT EXISTS");
         // TODO generate sequence names
         sb.append(" seq");
-        if (Randomly.getBoolean()) {
+        if (majorVersion >= 12 && Randomly.getBoolean()) {
             sb.append(" AS ");
             sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
         }
