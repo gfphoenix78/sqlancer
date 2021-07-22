@@ -7,6 +7,7 @@ import sqlancer.Randomly;
 import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.query.SQLQueryAdapter;
 import sqlancer.postgres.PostgresGlobalState;
+import sqlancer.postgres.PostgresProvider;
 import sqlancer.postgres.PostgresSchema.PostgresColumn;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
@@ -97,6 +98,10 @@ public class PostgresAlterTableGenerator {
         } else {
             // make it more likely that the ALTER TABLE succeeds
             action = Randomly.subset(Randomly.smallNumber(), Action.values());
+        }
+        if (PostgresProvider.majorVersion() < 12) {
+            action.remove(Action.FORCE_ROW_LEVEL_SECURITY);
+            action.remove(Action.NO_FORCE_ROW_LEVEL_SECURITY);
         }
         if (randomTable.getColumns().size() == 1) {
             action.remove(Action.ALTER_TABLE_DROP_COLUMN);

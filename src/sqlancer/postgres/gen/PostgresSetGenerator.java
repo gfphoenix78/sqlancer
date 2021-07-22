@@ -132,8 +132,11 @@ public final class PostgresSetGenerator {
         StringBuilder sb = new StringBuilder();
         ArrayList<ConfigurationOption> options = new ArrayList<>(Arrays.asList(ConfigurationOption.values()));
         options.remove(ConfigurationOption.DEFAULT_WITH_OIDS);
-        if (PostgresProvider.majorVersion() >= 12)
+        if (PostgresProvider.majorVersion() < 12) {
             options.remove(ConfigurationOption.PARALLEL_LEADER_PARTICIPATION);
+            options.remove(ConfigurationOption.WAL_COMPRESSION);
+            options.remove(ConfigurationOption.ENABLE_PARALLEL_APPEND);
+        }
         ConfigurationOption option = Randomly.fromList(options);
         sb.append("SET ");
         if (Randomly.getBoolean()) {
