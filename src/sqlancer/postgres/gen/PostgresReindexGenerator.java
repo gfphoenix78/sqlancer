@@ -28,7 +28,7 @@ public final class PostgresReindexGenerator {
         StringBuilder sb = new StringBuilder();
         sb.append("REINDEX");
         if (majorVersion >= 10 && Randomly.getBoolean()) {
-            sb.append(" VERBOSE");
+            sb.append(" (VERBOSE)");
         }
         sb.append(" ");
         Scope scope = Randomly.fromOptions(Scope.values());
