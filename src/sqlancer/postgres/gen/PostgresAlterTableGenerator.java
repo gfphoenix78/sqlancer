@@ -104,6 +104,7 @@ public class PostgresAlterTableGenerator {
             action.remove(Action.NO_FORCE_ROW_LEVEL_SECURITY);
             action.remove(Action.ENABLE_ROW_LEVEL_SECURITY);
             action.remove(Action.DISABLE_ROW_LEVEL_SECURITY);
+            action.remove(Action.SET_LOGGED_UNLOGGED);
         }
         if (randomTable.getColumns().size() == 1) {
             action.remove(Action.ALTER_TABLE_DROP_COLUMN);

@@ -20,7 +20,7 @@ public final class PostgresSetGenerator {
         // WAL_LEVEL("wal_level", (r) -> Randomly.fromOptions("replica", "minimal", "logical")),
         // FSYNC("fsync", (r) -> Randomly.fromOptions(1, 0)),
         SYNCHRONOUS_COMMIT("synchronous_commit",
-                (r) -> Randomly.fromOptions("remote_apply", "remote_write", "local", "off")),
+                (r) -> Randomly.fromOptions("remote_write", "on", "local", "off")),
         WAL_COMPRESSION("wal_compression", (r) -> Randomly.fromOptions(1, 0)),
         // wal_buffer: server start
         // wal_writer_delay: server start
@@ -140,6 +140,8 @@ public final class PostgresSetGenerator {
             options.remove(ConfigurationOption.JIT_ABOVE_COST);
             options.remove(ConfigurationOption.JIT_INLINE_ABOVE_COST);
             options.remove(ConfigurationOption.JIT_OPTIMIZE_ABOVE_COST);
+            options.remove(ConfigurationOption.PARALLEL_TUPLE_COST);
+            options.remove(ConfigurationOption.MIN_PARALLEL_TABLE_SCAN_SIZE);
         }
         ConfigurationOption option = Randomly.fromList(options);
         sb.append("SET ");
