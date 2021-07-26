@@ -143,6 +143,9 @@ public final class PostgresSetGenerator {
             options.remove(ConfigurationOption.PARALLEL_TUPLE_COST);
             options.remove(ConfigurationOption.MIN_PARALLEL_TABLE_SCAN_SIZE);
             options.remove(ConfigurationOption.ENABLE_PARALLEL_HASH);
+            options.remove(ConfigurationOption.PARALLEL_SETUP_COST);
+            options.remove(ConfigurationOption.ENABLE_PARTITION_PRUNING);
+            options.remove(ConfigurationOption.FORCE_PARALLEL_MODE);
         }
         ConfigurationOption option = Randomly.fromList(options);
         sb.append("SET ");
