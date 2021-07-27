@@ -22,6 +22,7 @@ public class PostgresTableGenerator {
     private final String tableName;
     private boolean columnCanHavePrimaryKey;
     private boolean columnHasPrimaryKey;
+    private boolean columnHasUnique;
     private final StringBuilder sb = new StringBuilder();
     private boolean isTemporaryTable;
     private final PostgresSchema newSchema;
@@ -107,7 +108,7 @@ public class PostgresTableGenerator {
             errors.add("unsupported ON COMMIT and foreign key combination");
             errors.add("ERROR: invalid ON DELETE action for foreign key constraint containing generated column");
             errors.add("exclusion constraints are not supported on partitioned tables");
-            PostgresCommon.addTableConstraints(columnHasPrimaryKey, sb, table, globalState, errors);
+            PostgresCommon.addTableConstraints(columnHasPrimaryKey, columnHasUnique, sb, table, globalState, errors);
         }
         sb.append(")");
         generateInherits();
@@ -231,6 +232,9 @@ public class PostgresTableGenerator {
         if (!columnCanHavePrimaryKey || columnHasPrimaryKey) {
             constraintSubset.remove(ColumnConstraint.PRIMARY_KEY);
         }
+        if (columnHasUnique) {
+            constraintSubset.remove(ColumnConstraint.UNIQUE);
+        }
         if (constraintSubset.contains(ColumnConstraint.GENERATED)
                 && constraintSubset.contains(ColumnConstraint.DEFAULT)) {
             // otherwise: ERROR: both default and identity specified for column
@@ -254,6 +258,7 @@ public class PostgresTableGenerator {
                 break;
             case UNIQUE:
                 sb.append("UNIQUE");
+                columnHasUnique = true;
                 break;
             case PRIMARY_KEY:
                 sb.append("PRIMARY KEY");
@@ -299,5 +304,4 @@ public class PostgresTableGenerator {
             }
         }
     }
-
 }

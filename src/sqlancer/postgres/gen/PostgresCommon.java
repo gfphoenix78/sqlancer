@@ -244,7 +244,7 @@ public final class PostgresCommon {
         }
     }
 
-    public static void addTableConstraints(boolean excludePrimaryKey, StringBuilder sb, PostgresTable table,
+    public static void addTableConstraints(boolean excludePrimaryKey, boolean excludeUnique, StringBuilder sb, PostgresTable table,
             PostgresGlobalState globalState, ExpectedErrors errors) {
         // TODO constraint name
         List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
@@ -257,6 +257,9 @@ public final class PostgresCommon {
         }
         if (excludePrimaryKey) {
             tableConstraints.remove(TableConstraints.PRIMARY_KEY);
+        }
+        if (excludeUnique) {
+            tableConstraints.remove(TableConstraints.UNIQUE);
         }
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             tableConstraints.remove(TableConstraints.FOREIGN_KEY);
