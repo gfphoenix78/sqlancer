@@ -68,7 +68,7 @@ public abstract class PivotedQuerySynthesisBase<S extends GlobalState<?, ?, C>, 
             if (result == null) {
                 throw new IgnoreMeException();
             }
-            return !result.isClosed();
+            return !result.isClosed() && result.next();
         }
     }
 
