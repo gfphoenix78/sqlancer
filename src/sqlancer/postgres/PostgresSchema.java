@@ -16,6 +16,7 @@ import sqlancer.IgnoreMeException;
 import sqlancer.Randomly;
 import sqlancer.SQLConnection;
 import sqlancer.common.DBMSCommon;
+import sqlancer.common.query.ExpectedErrors;
 import sqlancer.common.schema.AbstractRelationalTable;
 import sqlancer.common.schema.AbstractRowValue;
 import sqlancer.common.schema.AbstractSchema;
@@ -25,6 +26,8 @@ import sqlancer.common.schema.TableIndex;
 import sqlancer.postgres.PostgresSchema.PostgresTable;
 import sqlancer.postgres.PostgresSchema.PostgresTable.TableType;
 import sqlancer.postgres.ast.PostgresConstant;
+import sqlancer.postgres.ast.PostgresExpression;
+import sqlancer.postgres.gen.PostgresTableGenerator;
 
 public class PostgresSchema extends AbstractSchema<PostgresGlobalState, PostgresTable> {
 
@@ -47,11 +50,54 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             return Randomly.fromList(dataTypes);
         }
     }
+    public enum ColumnConstraintType {
+        NULL_OR_NOT_NULL, UNIQUE, PRIMARY_KEY, DEFAULT, CHECK, GENERATED;
+    }
+    public static class ColumnConstraint {
+        ColumnConstraintType type;
+        PostgresExpression expression;
+        public ColumnConstraint(ColumnConstraintType type, PostgresExpression expression) {
+            this.type = type;
+            this.expression = expression;
+        }
 
+        public String generateQuery() {
+            switch (type) {
+                case NULL_OR_NOT_NULL:
+                    return Randomly.fromOptions("NOT NULL", "NULL");
+                case UNIQUE:
+                    return "UNIQUE";
+                case PRIMARY_KEY:
+                    return "PRIMARY KEY";
+                case DEFAULT:
+                    assert this.expression != null;
+                    return "DEFAULT (" + PostgresVisitor.asString(this.expression) + ")";
+                case CHECK:
+                    assert this.expression != null;
+                    return "CHECK(" + PostgresVisitor.asString(this.expression) + ")";
+                case GENERATED:
+                    if (this.expression == null) {
+                        return "GENERATED " + Randomly.fromOptions("ALWAYS", "BY DEFAULT") + " AS IDENTITY";
+                    } else {
+                        return "GENERATED ALWAYS AS (" + PostgresVisitor.asString(this.expression) + ") STORED";
+                    }
+                default:
+                    throw new AssertionError("unknown constraint type=" + type);
+            }
+        }
+    }
     public static class PostgresColumn extends AbstractTableColumn<PostgresTable, PostgresDataType> {
-
+        private List<ColumnConstraint> constraints;
         public PostgresColumn(String name, PostgresDataType columnType) {
             super(name, null, columnType);
+        }
+
+        public List<ColumnConstraint> getConstraints() {
+            return constraints;
+        }
+
+        public void setConstraints(List<ColumnConstraint> constraints) {
+            this.constraints = constraints;
         }
 
         public static PostgresColumn createDummy(String name) {
@@ -157,7 +203,7 @@ public class PostgresSchema extends AbstractSchema<PostgresGlobalState, Postgres
             extends AbstractRelationalTable<PostgresColumn, PostgresIndex, PostgresGlobalState> {
 
         public enum TableType {
-            STANDARD, TEMPORARY
+            STANDARD, TEMPORARY, UNLOGGED
         }
 
         private final TableType tableType;

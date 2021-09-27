@@ -100,6 +100,42 @@ public final class Randomly {
         return options[getNextInt(0, options.length)];
     }
 
+    public static <T> T fromList(List<T> list, List<Integer> prob) {
+        assert list.size() == prob.size();
+        int n = 0;
+        for (int i = 0; i < prob.size(); i++) {
+            assert prob.get(i) >= 0;
+            n += prob.get(i);
+        }
+        assert n >= 0;
+        int idx = getNextInt(0, n);
+        int acc = 0;
+        for (int i = 0; i < prob.size(); i++) {
+            acc += prob.get(i);
+            if (idx < acc)
+                return list.get(i);
+        }
+        throw new AssertionError("idx not between probability range");
+    }
+
+    public static <T> T fromList(T []list, int []prob) {
+        assert list.length == prob.length;
+        int n = 0;
+        for (int i = 0; i < prob.length; i++) {
+            assert prob[i] >= 0;
+            n += prob[i];
+        }
+        assert n >= 0;
+        int idx = getNextInt(0, n);
+        int acc = 0;
+        for (int i = 0; i < prob.length; i++) {
+            acc += prob[i];
+            if (idx < acc)
+                return list[i];
+        }
+        throw new AssertionError("idx not between probability range");
+    }
+
     @SafeVarargs
     public static <T> List<T> nonEmptySubset(T... options) {
         int nr = 1 + getNextInt(0, options.length);
@@ -164,6 +200,14 @@ public final class Randomly {
 
     public static boolean getBoolean() {
         return getThreadRandom().get().nextBoolean();
+    }
+
+    public static boolean getBoolean(int trueProb, int falseProb) {
+        assert trueProb >= 0;
+        assert falseProb >= 0;
+        assert trueProb + falseProb > 0;
+        int k = getNextInt(0, trueProb + falseProb);
+        return k < trueProb;
     }
 
     private static ThreadLocal<Random> getThreadRandom() {
