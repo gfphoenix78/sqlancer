@@ -129,12 +129,12 @@ public final class PostgresCommon {
             sb.append("boolean");
             break;
         case INT:
-            if (Randomly.getBoolean() && allowSerial) {
-                serial = true;
-                sb.append(Randomly.fromOptions("serial", "bigserial"));
-            } else {
+//            if (Randomly.getBoolean() && allowSerial) {
+//                serial = true;
+//                sb.append(Randomly.fromOptions("serial", "bigserial"));
+//            } else {
                 sb.append(Randomly.fromOptions("smallint", "integer", "bigint"));
-            }
+//            }
             break;
         case TEXT:
             if (Randomly.getBoolean()) {
@@ -244,7 +244,7 @@ public final class PostgresCommon {
         }
     }
 
-    public static void addTableConstraints(boolean excludePrimaryKey, boolean excludeUnique, StringBuilder sb, PostgresTable table,
+    public static void addTableConstraints(boolean excludePrimaryKey, boolean excludeUnique, PostgresTable table,
             PostgresGlobalState globalState, ExpectedErrors errors) {
         // TODO constraint name
         List<TableConstraints> tableConstraints = Randomly.nonEmptySubset(TableConstraints.values());
@@ -264,11 +264,11 @@ public final class PostgresCommon {
         if (globalState.getSchema().getDatabaseTables().isEmpty()) {
             tableConstraints.remove(TableConstraints.FOREIGN_KEY);
         }
-        for (TableConstraints t : tableConstraints) {
-            sb.append(", ");
-            // TODO add index parameters
-            addTableConstraint(sb, table, globalState, t, errors);
-        }
+//        for (TableConstraints t : tableConstraints) {
+//            sb.append(", ");
+//            // TODO add index parameters
+//            addTableConstraint(sb, table, globalState, t, errors);
+//        }
     }
 
     public static void addTableConstraint(StringBuilder sb, PostgresTable table, PostgresGlobalState globalState,
