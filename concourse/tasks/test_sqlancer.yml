@@ -1,0 +1,21 @@
+platform: linux
+
+image_resource:
+  type: docker-image
+
+inputs:
+  - name: gpdb_src
+  - name: sqlancer_src
+  - name: bin_gpdb
+
+outputs:
+  - name: sqlancer
+
+run:
+  path: sqlancer_src/concourse/scripts/test_sqlancer.sh
+
+params:
+  TEST_OS: ""
+  CONFIGURE_FLAGS: ""
+  OPTIMIZER: 
+
