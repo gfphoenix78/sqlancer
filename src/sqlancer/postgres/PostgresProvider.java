@@ -188,6 +188,9 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
 
     @Override
     public void generateDatabase(PostgresGlobalState globalState) throws Exception {
+        loadTypes(globalState);
+        loadOperators(globalState);
+        loadFunctions(globalState);
         readFunctions(globalState);
         createTables(globalState, Randomly.fromOptions(4, 5, 6));
         prepareTables(globalState);
@@ -267,6 +270,96 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         return new SQLConnection(con);
     }
 
+    protected void loadTypes(PostgresGlobalState globalState) throws SQLException {
+        String q = "select typname, oid, typrelid, typelem, typarray, typdelim, typtype from pg_type";
+        SQLQueryAdapter query = new SQLQueryAdapter(q);
+        try (SQLancerResultSet rs = query.executeAndGet(globalState)) {
+            while (rs.next()) {
+//            int oid,
+//            int typrelid,
+//            int typelem,
+//            int typarray,
+//            char typdelim,
+//            char typtype
+                PgType pgType = new PgType(
+                        rs.getString(1),
+                        rs.getInt(2),
+                        rs.getInt(3),
+                        rs.getInt(4),
+                        rs.getInt(5),
+                        rs.getString(6).charAt(0),
+                        rs.getString(7).charAt(0)
+                );
+                globalState.addType(pgType);
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+    protected void loadOperators(PostgresGlobalState globalState) throws SQLException {
+        String q = "select oprname, oprleft, oprright, oprresult from pg_operator where oprright != 0";
+        SQLQueryAdapter query = new SQLQueryAdapter(q);
+        PgOperators pgOperators = globalState.getPgOperators();
+        try (SQLancerResultSet rs = query.executeAndGet(globalState)) {
+            while (rs.next()) {
+                String name = rs.getString(1);
+                int left = rs.getInt(2);
+                int right = rs.getInt(3);
+                int result = rs.getInt(4);
+                assert result != 0 && name.length() > 0;
+                pgOperators.addOperator(name,
+                        globalState.getType(result),
+                        globalState.getType(left),
+                        globalState.getType(right));
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+    }
+    protected void loadFunctions(PostgresGlobalState globalState) throws SQLException {
+        // TODO: FIX the version
+//        version_num < 110000 ? "proisagg" : "prokind = 'a'";
+//        version_num < 110000 ? "proiswindow" : "prokind = 'w'";
+        String proc_is_agg = "prokind = 'a'";
+        String proc_is_window = "prokind = 'w'";
+        String q = "select (select nspname from pg_namespace where oid = pronamespace), " +
+                    "proname, oid, prorettype from pg_proc " +
+                    "where prorettype::regtype::text not in ('event_trigger', 'trigger', 'opaque', 'internal') " +
+                    "and proname <> 'pg_event_trigger_table_rewrite_reason' " +
+                    "and proname <> 'pg_event_trigger_table_rewrite_oid' " +
+                    "and proname !~ '^ri_fkey_' " +
+                    "and not (proretset or " + proc_is_agg + " or " + proc_is_window + ")";
+        SQLQueryAdapter query = new SQLQueryAdapter(q);
+        PgProcs pgProcs = globalState.getPgProcs();
+        assert pgProcs.pgProcs.isEmpty();
+        try (SQLancerResultSet rs = query.executeAndGet(globalState)) {
+            while (rs.next()) {
+                pgProcs.addProc(rs.getString(1), // schema
+                                rs.getString(2), // name
+                                rs.getInt(3),    // oid
+                                globalState.getType(rs.getInt(4))); // rettype
+            }
+        } catch (Throwable throwable) {
+            throwable.printStackTrace();
+        }
+        // parse arguments
+        for (int i = 0, n = pgProcs.pgProcs.size(); i < n; i++) {
+            PgProcs.PgProc proc = pgProcs.pgProcs.get(i);
+            q = "select unnest(proargtypes) from pg_proc where oid = " + proc.oid;
+            query = new SQLQueryAdapter(q);
+            try (SQLancerResultSet rs = query.executeAndGet(globalState)) {
+                while (rs.next()) {
+                    proc.addArgTypes(globalState.getType(rs.getInt(1)));
+                }
+            } catch (Throwable throwable) {
+                throwable.printStackTrace();
+            }
+        }
+        for (PgProcs.PgProc proc : pgProcs.pgProcs) {
+            if (proc.args.size() > 1)
+                System.out.println("found len(args) > 1:" + proc);
+        }
+    }
     protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
         SQLQueryAdapter query = new SQLQueryAdapter("SELECT proname, provolatile FROM pg_proc;");
         SQLancerResultSet rs = query.executeAndGet(globalState);
