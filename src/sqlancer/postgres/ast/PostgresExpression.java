@@ -1,10 +1,10 @@
 package sqlancer.postgres.ast;
 
-import sqlancer.postgres.PostgresSchema.PostgresDataType;
+import sqlancer.postgres.PgType;
 
 public interface PostgresExpression {
 
-    default PostgresDataType getExpressionType() {
+    default PgType getExpressionType() {
         return null;
     }
 

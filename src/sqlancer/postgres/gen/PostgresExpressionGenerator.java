@@ -184,7 +184,7 @@ public class PostgresExpressionGenerator implements ExpressionGenerator<Postgres
                     generateExpression(depth + 1, PostgresDataType.TEXT));
         case BETWEEN:
             PostgresDataType type = getMeaningfulType();
-            return new PostgresBetweenOperation(generateExpression(depth + 1, type),
+            return new PostgresBetweenOperation(globalState, generateExpression(depth + 1, type),
                     generateExpression(depth + 1, type), generateExpression(depth + 1, type), Randomly.getBoolean());
         case SIMILAR_TO:
             assert !expectedResult;

@@ -1,18 +1,22 @@
 package sqlancer.postgres.ast;
 
+import sqlancer.postgres.PgType;
+import sqlancer.postgres.PostgresGlobalState;
 import sqlancer.postgres.PostgresSchema.PostgresDataType;
 import sqlancer.postgres.ast.PostgresBinaryComparisonOperation.PostgresBinaryComparisonOperator;
 import sqlancer.postgres.ast.PostgresBinaryLogicalOperation.BinaryLogicalOperator;
 
 public final class PostgresBetweenOperation implements PostgresExpression {
 
+    private final PostgresGlobalState globalState;
     private final PostgresExpression expr;
     private final PostgresExpression left;
     private final PostgresExpression right;
     private final boolean isSymmetric;
 
-    public PostgresBetweenOperation(PostgresExpression expr, PostgresExpression left, PostgresExpression right,
-            boolean symmetric) {
+    public PostgresBetweenOperation(PostgresGlobalState globalState, PostgresExpression expr, PostgresExpression left, PostgresExpression right,
+                                    boolean symmetric) {
+        this.globalState = globalState;
         this.expr = expr;
         this.left = left;
         this.right = right;
@@ -59,8 +63,8 @@ public final class PostgresBetweenOperation implements PostgresExpression {
     }
 
     @Override
-    public PostgresDataType getExpressionType() {
-        return PostgresDataType.BOOLEAN;
+    public PgType getExpressionType() {
+        return globalState.getType("bool");
     }
 
 }
