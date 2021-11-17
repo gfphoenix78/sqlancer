@@ -50,6 +50,8 @@ public abstract class ProviderAdapter<G extends GlobalState<O, ? extends Abstrac
                         globalState.getManager().incrementSelectQueryCount();
                     } catch (IgnoreMeException e) {
 
+                    } catch (Throwable t) {
+                        t.printStackTrace();
                     }
                     assert localState != null;
                     localState.executedWithoutError();

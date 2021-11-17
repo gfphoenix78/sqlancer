@@ -57,8 +57,20 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
         List<PostgresJoin> joinStatements = getJoinStatements(state, columns, tables);
         List<PostgresExpression> fromTables = tables.stream().map(t -> new PostgresFromTable(t, Randomly.getBoolean()))
                 .collect(Collectors.toList());
-        int secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
-        int firstCount = getOptimizedQueryCount(fromTables, columns, randomWhereCondition, joinStatements);
+        int secondCount;
+        int firstCount;
+        try {
+            secondCount = getUnoptimizedQueryCount(fromTables, randomWhereCondition, joinStatements);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            secondCount = -1;
+        }
+        try {
+            firstCount = getOptimizedQueryCount(fromTables, columns, randomWhereCondition, joinStatements);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            firstCount = -1;
+        }
         if (firstCount == -1 || secondCount == -1) {
             throw new IgnoreMeException();
         }
@@ -160,6 +172,7 @@ public class PostgresNoRECOracle extends NoRECBase<PostgresGlobalState> implemen
                 }
             }
         } catch (SQLException e) {
+            e.printStackTrace();
             throw new IgnoreMeException();
         }
         return firstCount;

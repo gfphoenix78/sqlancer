@@ -334,10 +334,12 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
         assert pgProcs.pgProcs.isEmpty();
         try (SQLancerResultSet rs = query.executeAndGet(globalState)) {
             while (rs.next()) {
-                pgProcs.addProc(rs.getString(1), // schema
+                PgProcs.PgProc proc = pgProcs.addProc(rs.getString(1), // schema
                                 rs.getString(2), // name
                                 rs.getInt(3),    // oid
                                 globalState.getType(rs.getInt(4))); // rettype
+                // set prokind & provolatile
+                
             }
         } catch (Throwable throwable) {
             throwable.printStackTrace();
@@ -355,10 +357,10 @@ public class PostgresProvider extends SQLProviderAdapter<PostgresGlobalState, Po
                 throwable.printStackTrace();
             }
         }
-        for (PgProcs.PgProc proc : pgProcs.pgProcs) {
-            if (proc.args.size() > 1)
-                System.out.println("found len(args) > 1:" + proc);
-        }
+//        for (PgProcs.PgProc proc : pgProcs.pgProcs) {
+//            if (proc.args.size() > 1)
+//                System.out.println("found len(args) > 1:" + proc);
+//        }
     }
     protected void readFunctions(PostgresGlobalState globalState) throws SQLException {
         SQLQueryAdapter query = new SQLQueryAdapter("SELECT proname, provolatile FROM pg_proc;");

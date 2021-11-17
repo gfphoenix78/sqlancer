@@ -164,6 +164,9 @@ public class PostgresGlobalState extends SQLGlobalState<PostgresOptions, Postgre
         name2types.put(alias, t);
     }
 
+    public PgType getBoolType() {
+        return getType("bool");
+    }
     public PgType getType(String name) { return name2types.get(name); }
     public PgType getType(int oid) { return oid2types.get(oid); }
     public Map<String, Character> getFunctionsAndTypes() {

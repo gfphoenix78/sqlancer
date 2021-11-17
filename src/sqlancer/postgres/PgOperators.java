@@ -13,6 +13,14 @@ public class PgOperators {
             this.name = name;
             this.result = result;
         }
+
+        public PgType getResult() {
+            return result;
+        }
+
+        public String getName() {
+            return name;
+        }
     }
     public static class PgOperator1 extends PgOperator {
         PgOperator1(String name, PgType result, PgType operand) {
@@ -29,6 +37,9 @@ public class PgOperators {
         }
         PgType left, right;
     }
+    // fake operator
+    public static final PgOperator2 AND = new PgOperator2("AND", null, null, null);
+    public static final PgOperator2 OR = new PgOperator2("OR", null, null, null);
     public List<PgOperator1> getUnaryOperators() {
         return unaryOperators;
     }

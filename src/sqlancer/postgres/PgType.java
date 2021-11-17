@@ -27,6 +27,14 @@ public class PgType {
         this.typdelim = typdelim;
         this.typtype = typtype;
     }
+
+    public String getTypname() {
+        return typname;
+    }
+
+    public boolean assignable(PgType from) {
+        return true;
+    }
 //    public static PgType addType(String typname,
 //                          int oid,
 //                          int typrelid,
